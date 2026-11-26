@@ -1,0 +1,67 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: codemix_app_container
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_KEY: ${APP_KEY:-}
+      CACHE_STORE: file
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: Inventario_codemix
+      DB_USERNAME: postgres
+      DB_PASSWORD: "1234"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - red_api
+    
+
+  db:
+    image: postgres:15-alpine
+    container_name: codemix_postgres_container
+    environment:
+      POSTGRES_DB: Inventario_codemix
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+    ports:
+      - "5432:5432"
+    networks:
+      - red_api
+    volumes:
+      - pgdata_camuad:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Inventario_codemix"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+ 
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: codemix_pgadmin_container
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@codemix.com
+      PGADMIN_DEFAULT_PASSWORD: 1234
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    networks:
+      - red_api
+ 
+volumes:
+  pgdata_camuad:
+ 
+networks:
+  red_api:
+    driver: bridge
