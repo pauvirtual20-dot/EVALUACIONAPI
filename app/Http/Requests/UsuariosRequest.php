@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
- class UsuariosRequest extends FormRequest
+class UsuariosRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,34 +15,34 @@ use Illuminate\Foundation\Http\FormRequest;
     public function rules(): array
     {
         $isUpdate = $this->isMethod('PUT') || $this->isMethod('PATCH');
-        $usuarioId = $this->route('usuario') ?? $this->route('id'); // usuario/id
+        $usuarioId = $this->route('usuario') ?? $this->route('id');
 
         return [
-              'rol_id' => [
+            'rol_id' => [
                 $isUpdate ? 'sometimes' : 'required',
                 'integer',
-                'exists:roles,id'
+                'exists:roles,id',
             ],
-
             'nombre' => [
                 $isUpdate ? 'sometimes' : 'required',
-                'varchar',
+                'string',
                 'max:255',
-                Rule::unique('Usuarios', 'nombre')->ignore($UusarioId, 'id')
             ],
             'correo' => [
                 $isUpdate ? 'sometimes' : 'required',
-                'varchar',
-                'max:255'
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'correo')->ignore($usuarioId, 'id'),
             ],
             'correo_verificado' => [
-                $isUpdate ? 'sometimes' : 'required',
-                'TimeStamp'
+                'nullable',
+                'date',
             ],
-          'password' => [
-                $isUpdate ? 'sometimes' : 'required',
+            'password' => [
+                $isUpdate ? 'nullable' : 'required',
                 'string',
-                'min:8'
+                'min:8',
             ],
         ];
     }
@@ -50,11 +50,6 @@ use Illuminate\Foundation\Http\FormRequest;
     public function messages(): array
     {
         return [
-            // 'codigo.required' => 'El código del centro es obligatorio.',
-            // 'codigo.string' => 'El código debe ser texto.',
-            // 'codigo.max' => 'El código no puede exceder los 20 caracteres.',
-            // 'codigo.unique' => 'Este código de centro ya está registrado.',
-
             'rol_id.required' => 'El rol es obligatorio.',
             'rol_id.integer' => 'El rol debe ser un número entero.',
             'rol_id.exists' => 'El rol seleccionado no existe en el sistema.',
@@ -64,9 +59,12 @@ use Illuminate\Foundation\Http\FormRequest;
             'nombre.max' => 'El nombre no puede exceder los 255 caracteres.',
 
             'correo.required' => 'El correo electrónico es obligatorio.',
+            'correo.string' => 'El correo electrónico debe ser texto.',
             'correo.email' => 'Debe proporcionar un correo electrónico válido.',
-            'correo.max' => 'El correo electrónico no puede exceder los 150 caracteres.',
+            'correo.max' => 'El correo electrónico no puede exceder los 255 caracteres.',
             'correo.unique' => 'Este correo electrónico ya está registrado.',
+
+            'correo_verificado.date' => 'La fecha de verificación no tiene un formato válido.',
 
             'password.required' => 'La contraseña es obligatoria.',
             'password.string' => 'La contraseña debe ser texto.',
@@ -74,4 +72,3 @@ use Illuminate\Foundation\Http\FormRequest;
         ];
     }
 }
-

@@ -1,11 +1,11 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\FichaService;
-use App\Http\Requests\FichaRequest;
+use App\Http\Requests\UsuariosRequest;
+use App\Services\UsuariosService;
+use Illuminate\Http\JsonResponse;
+use Throwable;
 
 class UsuariosController extends Controller
 {
@@ -14,72 +14,109 @@ class UsuariosController extends Controller
     }
 
     // Traer todos los registros
-    public function index()
+    public function index(): JsonResponse
     {
-        $registrosusuarios = $this->UsuariosService->getAll();
+        try {
+            $registrosusuarios = $this->UsuariosService->getAll();
 
-        return response()->json([
-            'message' => "Se listaron todos los usuarios correctamente",
-            'data' => $registros
-        ], 200);
+            return response()->json([
+                'message' => 'Se listaron todos los usuarios correctamente',
+                'data' => $registrosusuarios,
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => 'Error al listar los usuarios',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     // Crear un registro
-    public function store(FichaRequest $request)
+    public function store(UsuariosRequest $request): JsonResponse
     {
-        $registrousuarios = $this->UsuariosService->create($request->validated());
-               
-        return response()->json([
-            'message' => 'El usuario se creó correctamente',
-            'datosRegistrados' => $registroFicha
-        ], 201);
-    }
-     // Traer un registro por id
-    public function show(string $id)
-    {
-        $registro = $this->UsuariosService->getById($id);
+        try {
+            $registrousuarios = $this->UsuariosService->create($request->validated());
 
-        if (!$registro) {
             return response()->json([
-                'message' => 'No se encontró el registro con ese id'
-            ], 404);
+                'message' => 'El usuario se creó correctamente',
+                'data' => $registrousuarios,
+            ], 201);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al crear el usuario',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Se listó el registro correctamente',
-            'data' => $registro
-        ], 200);
     }
-    
+
+    // Traer un registro por id
+    public function show(int $id): JsonResponse
+    {
+        try {
+            $registro = $this->UsuariosService->getById($id);
+
+            if (!$registro) {
+                return response()->json([
+                    'message' => 'No se encontró el registro con ese id',
+                ], 404);
+            }
+
+            return response()->json([
+                'message' => 'Se listó el registro correctamente',
+                'data' => $registro,
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al listar el registro por id',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     // Actualizar un registro
-    public function update(UsuariosRequest $request, string $id)
+    public function update(UsuariosRequest $request, int $id): JsonResponse
     {
-        $registroActualizado = $this->UsuariosService->update($id, $request->validated());
+        try {
+            $registroActualizado = $this->UsuariosService->update($id, $request->validated());
 
-        if (!$registroActualizado) {
+            if (!$registroActualizado) {
+                return response()->json([
+                    'message' => 'No se encontró el registro con ese id',
+                ], 404);
+            }
+
             return response()->json([
-                'message' => 'No se encontró el registro con ese id'
-            ], 404);
+                'message' => 'Se actualizó el registro correctamente',
+                'data' => $registroActualizado,
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al actualizar el registro',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'Se actualizó el registro correctamente',
-            'data' => $registroActualizado
-        ], 200);
     }
-     // Eliminar un registro
-    public function destroy(string $id)
+
+    // Eliminar un registro
+    public function destroy(int $id): JsonResponse
     {
-        $validar = $this->UsuariosService->delete($id);
+        try {
+            $validar = $this->UsuariosService->delete($id);
 
-        if (!$validar) {
+            if (!$validar) {
+                return response()->json([
+                    'message' => 'No se encontró el registro con ese id',
+                ], 404);
+            }
+
             return response()->json([
-                'message' => 'No se encontró el registro con ese id'
-            ], 404);
+                'message' => 'El usuario se eliminó correctamente',
+            ], 200);
+        } catch (Throwable $e) {
+            return response()->json([
+                'message' => 'Ocurrió un error al eliminar el usuario',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-
-        return response()->json([
-            'message' => 'El usuario se eliminó correctamente',
-        ], 200); 
     }
 }
